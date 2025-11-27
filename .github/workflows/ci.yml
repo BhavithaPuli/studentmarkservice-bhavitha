@@ -1,13 +1,11 @@
-name: CI Pipeline - Student Mark Service
-
+name: CI-CD Pipeline - Student Mark Service
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,3 +35,13 @@ jobs:
 
     - name: Push Docker Image
       run: docker push bhavithapuli/sms-app:latest
+
+    - name: Apply kubeconfig
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl set image deployment/studentmarkservice studentmarkservice-image=bhavithapuli/sms-app:latest
+        kubectl rollout status deployment/studentmarkservice
